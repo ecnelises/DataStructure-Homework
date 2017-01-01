@@ -1,0 +1,33 @@
+h1, h3 {
+  color: #158DB2;
+}
+
+h2 {
+  color: gray;
+}
+
+main {
+  width: 80%;
+  margin: 20px auto 20px auto;
+}
+
+ol li {
+  list-style: #158DB2;
+  margin-left: -20px;
+}
+
+footer {
+  width: 80%;
+  margin: 10px auto 10px auto;
+  padding: 20px 0 20px 0;
+  text-align: center;
+  border-top: 1px solid black;
+}
+
+code {
+  font-family: monospace;
+}
+
+footer {
+  font-family: monospace;
+}

@@ -1,0 +1,51 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>约瑟夫生者死者游戏</title>
+    <link rel="stylesheet" href="../common.css">
+  </head>
+  <body>
+    <main>
+      <h1>约瑟夫生者死者游戏</h1>
+      <h2>数据结构课程设计作业</h2>
+      <ol>
+      <section>
+        <li><h3>简介</h3></li>
+        <p>本程序基于命令行界面，向用户提供了约瑟夫生者死者游戏的操作接口。</p>
+        <p>本系统使用C++语言写成，可以在任何支持C++14标准的编译器上编译通过。</p>
+      </section>
+      <section>
+        <li><h3>功能</h3></li>
+        <p>这个程序可以实现约瑟夫生者死者游戏的功能，由用户输入总人数、间隔人数和期望的存活人数，系统输出死亡顺序。</p>
+        <p>每个乘客都用一个数字表示，从1到n排列。</p>
+      </section>
+      <section>
+        <li><h3>实现</h3></li>
+        <p>程序没有用链表模拟实现，而是通过迭代的方式计算出一个死亡的顺序表。提供的接口就通过这个表进行。</p>
+        <p>用图来说明逻辑如下：</p>
+        <img src="/Users/muller/dotsfile/joseph_game_start.dot.svg" alt="joseph_game_start.dot">
+        <p>如图，总人数为9，如果我们设定间隔为7，剩余人数为2，那么死亡的玩家应该为：</p>
+        <img src="/Users/muller/dotsfile/joseph_game_process.dot.svg" alt="joseph_game_process.dot">
+        <p>顺序为7 5 4 6 9 3 8。</p>
+      </section>
+      <section>
+        <li><h3>API</h3></li>
+        <p>API结构非常简单紧凑。</p>
+        <code>
+          class JosephCircle { <br><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;// 构造函数，构造完毕后结果就已经生成了 <br>
+          &nbsp;&nbsp;&nbsp;&nbsp;JosephCircle(unsigned n_people, unsigned len_section, unsigned n_alive, unsigned start = 1) <br><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;// 数组包含了幸存者的编号 <br>
+          &nbsp;&nbsp;&nbsp;&nbsp;const std::vector&lt;unsigned&gt;& livings; <br><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;// 数组包含了死亡者的编号，按顺序 <br>
+          &nbsp;&nbsp;&nbsp;&nbsp;const std::vector&lt;unsigned&gt;& died; <br><br>
+          }; <br>
+        </code>
+      </section>
+      </ol>
+    </main>
+    <footer>
+      2016, 邱超凡
+    </footer>
+  </body>
+</html>

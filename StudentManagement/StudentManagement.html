@@ -1,0 +1,86 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>学生信息管理系统</title>
+    <link rel="stylesheet" href="../common.css">
+  </head>
+  <body>
+    <main>
+      <h1>学生信息管理系统</h1>
+      <h2>数据结构课程设计作业</h2>
+      <ol>
+      <section>
+        <li><h3>简介</h3></li>
+        <p>本程序基于命令行界面，向用户提供了一个较为完整的学生信息管理系统的功能，用户可以比较容易地操作数据，对考生的信息进行增删改查。除此之外，程序还提供了将数据保存到文件和读取文件内容的功能，以实现学生信息的持久化。</p>
+        <p>尽管本管理系统目前只提供了命令行的界面，但是其API使得其能够非常容易地进行扩展以适应GUI界面程序乃至Web服务等等。由于界面设计并不是这个项目想要体现的重点，故略去不表。</p>
+        <p>本系统使用C++语言写成，可以在任何支持C++14标准的编译器上编译通过。</p>
+      </section>
+      <section>
+        <li><h3>功能</h3></li>
+        <p>每个考生的信息包含了姓名、性别、考号、年龄和报考类别五个部分。每个考生的考号惟一，其他部分可以相同。</p>
+        <p>就目前而言，本程序提供了以下基本功能：</p>
+        <ol>
+          <li>插入考生数据</li>
+          <li>删除制定考生数据</li>
+          <li>根据考号查找考生数据</li>
+          <li>修改制定考生数据</li>
+          <li>查看所有考生</li>
+          <li>将考生信息写入指定文件</li>
+          <li>从指定文件读取考生信息</li>
+        </ol>
+        <p>其中，考生的考号是考生信息的惟一标志符。插入一个考号已在列表当中的新考生，数据将被视为不合法而丢弃。</p>
+        <p>每个命令都用一个数字表示，刚好是上面列表中的数字，对于没有命令对应的数，程序会自动提示错误。</p>
+      </section>
+      <section>
+        <li><h3>实现</h3></li>
+        <p>考虑到问题的实际特点，程序主要采用基于对象的方式进行设计。这样一方面可以提高程序的抽象程度，降低开发难度；另一方面基于对象的设计方式可以方便的采用RAII的手法，避免C++程序中常见的资源泄漏。</p>
+        <p>代码中大量使用了包括类型推断、匿名函数等C++新特性，开发效率得到提高，代码也变得清爽。</p>
+        <p>整个程序可以分为主要三个模块：存储管理模块、用户交互模块、主程序逻辑模块。</p>
+        <h4>存储管理模块</h4>
+        <p>课程设计的说明文件中提示用链表实现整个学生信息管理系统的内存管理。此项目采用了一个改进版本的链表结构，也就是所谓的Skip List，跳表。跳表主要在查询方式上对传统链表进行了改进，相比于传统链表O(n)的查询复杂度，跳表的平均复杂度可以到达O(lgn)，同时在实现上比同类复杂度的平衡二叉树更为简单。</p>
+        <p>下面是传统链表的结构：</p>
+        <img src="/Users/muller/dotsfile/tra_linked_list.dot.svg" alt="tra_linked_list.dot">
+        <p>很容易发现，如果要在链表中查找某个元素，需要一个个地遍历才能找到。在链表非常大的时候，这样的查找过程是非常耗时的。</p>
+        <p>基于类似于KMP算法的思想，我们想找到一种在查找时「一步跳得更远」的改进版数据结构，跳表应运而生。尽管诞生时间比红黑树等经典数据结构要晚，但跳表已经广泛应用在诸如Redis一样的著名程序当中。</p>
+        <img src="/Users/muller/dotsfile/skip_list_example.dot.svg" alt="skip_list_example.dot" style="margin-left:-25px;">
+        <p>如图，由于跳表的前提是链表有序。所以我们从最上面一层开始寻找，如果发现要找的数比35小，那就从1下降；否则前进到35再继续进行这个过程，直到找到要找的值或者发现不存在。</p>
+        <p>跳表的结构很好理解，本质上来说其就是一个加了很多层的链表。如果每个键在层的分布概率足够合适，那么跳表就可以达到很高的效率。</p>
+        <p>跳表的插入是自底向上的，先从底层插入，然后随机地向上延伸。注意，如果是第一个元素，那么必须每行都有。而跳表的删除则和插入的过程相反，是自顶向下的，先找到元素所在的最高层，然后向下删除。</p>
+        <p>具体的实现可以参考源代码中的SkipList模版类。</p>
+        <h4>用户交互模块</h4>
+        <p>整体的用户交互功能是基于命令行的。用户在命令行下面输入命令进行操作。除文件读写功能外，项目给用户的反馈信息也是通过标准输出进行。所以这个模块基本是依赖于iostream实现的。</p>
+        <p>在程序运行的主类StudentManager中，函数run负责维持整个接受用户输入然后输入的循环。用户可以输入0或者EOF退出程序。这个run方法会将用户输入的数字命令传给dispatch方法，然后进入对应的功能模块。</p>
+        <h4>主程序管理模块</h4>
+        <p>这部分是由dispatch方法根据用户输入的命令不同展开调用的。主程序管理模块可以看作是用户交互模块的延伸，对跳表类的接口进行了进一步的简单封装，让用户输入数据，并在命令行界面下输出结果。</p>        
+      </section>
+      <section>
+        <li><h3>API</h3></li>
+        <p>由于项目的重点在于数据结构，所以下面把跳表类的API重点列一下。</p>
+        <code>
+          template&lt;typename key, typename Value&gt; <br>
+          class SkipList { <br><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;// 删除指定键的元素，若没有则无副作用 <br>
+          &nbsp;&nbsp;&nbsp;&nbsp;void remove(const Key& key); <br><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;// 向指定键插入元素，若键已存在则无副作用 <br>
+          &nbsp;&nbsp;&nbsp;&nbsp;void insert(const Key& key, const Value& val); <br><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;// 查找是否有指定键的元素 <br>
+          &nbsp;&nbsp;&nbsp;&nbsp;bool search(const Key& key); <br><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;// 以指定键的元素为参数调用函数，若键不存在则无副作用 <br>
+          &nbsp;&nbsp;&nbsp;&nbsp;template&lt;typename F&gt; <br>
+          &nbsp;&nbsp;&nbsp;&nbsp;void apply(const Key& key, F func); <br><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;// 以指定键的元素为参数调用函数onsuccess，若键不存在则调用onerror <br>
+          &nbsp;&nbsp;&nbsp;&nbsp;template&lt;typename F1, typename F2&gt; <br>
+          &nbsp;&nbsp;&nbsp;&nbsp;void apply(const Key& key, F1 onsuccess, F2 onerror); <br><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;// 向所有元素调用函数 <br>
+          &nbsp;&nbsp;&nbsp;&nbsp;template&lt;typename F&gt; <br>
+          &nbsp;&nbsp;&nbsp;&nbsp;void foreach(F func); <br><br>
+          }; <br>
+        </code>
+      </section>
+      </ol>
+    </main>
+    <footer>
+      2016, 邱超凡
+    </footer>
+  </body>
+</html>
