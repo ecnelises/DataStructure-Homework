@@ -1,0 +1,83 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>家谱管理系统</title>
+    <link rel="stylesheet" href="../common.css">
+  </head>
+  <body>
+    <main>
+      <h1>家谱管理系统</h1>
+      <h2>数据结构课程设计作业</h2>
+      <ol>
+      <section>
+        <li><h3>简介</h3></li>
+        <p>本程序实现了一个家谱管理系统，并提供了一个简单的可以展示其功能的命令行界面。</p>
+        <p>本系统使用C++语言写成，可以在任何支持C++14标准的编译器上编译通过。</p>
+      </section>
+      <section>
+        <li><h3>功能</h3></li>
+        <p>本程序基于命令行，用户输入命令，可以建立、修改家谱。</p>
+        <p>大致的形式像这样：</p>
+        <blockquote>
+            ##		家谱管理系统		## <br>
+            ##					## <br>
+            ##		A -> 完善家谱		## <br>
+            ##		B -> 添加成员		## <br>
+            ##		C -> 解散局部家庭	## <br>
+            ##		D -> 成员改名		## <br>
+            ##		L -> 列出子女		## <br>
+            ##		E -> 退出		## <br>
+            首先建立一个家谱 <br>
+            请输入祖先的名字：
+        </blockquote>
+        <p>程序可以接受并处理用户的命令，然后向用户展示通过用户的命令对数据结构带来的修改。</p>
+      </section>
+      <section>
+        <li><h3>实现</h3></li>
+        <p>这里的家谱子树基于C++ STL中的vector类实现，实现部分放在源代码文件而声明部分放在头文件中。在实际的命令行界面中，主程序然后接受用户的命令，通过已定义的接口对这个已经建立好家谱树的进行操作。</p>
+        <img src="/Users/muller/dotsfile/genealogy.dot.svg" alt="genealogy.dot">
+        <p>更加具体的逻辑就在主函数的cpp文件里，其中都是比较琐碎的命令行处理，重点在于家谱树的实现。这里的家谱树提供了三个接口，分别用于改名、添加和删除。</p>
+        <h4>添加</h4>
+        <p>添加成员的基础在于查找，程序会从祖先开始递归查找是否有叫做某个名字的家庭成员。</p>
+        <p>在用户的添加过程中，用户会输入它的父亲节点和要添加的孩子数量、孩子节点，程序会先找到这个父亲节点，然后添加指定的儿子，这里的操作使用C++标准模版库中的<kbd>vector</kbd>实现。</p>
+        <h4>改名</h4>
+        <p>改名的方法比添加还要简单一点，因为并不涉及对任何父子关系的修改。只需要找到对应的节点，然后把它的<code>name</code>属性改掉即可。</p>
+        <p>由于在这几个功能当中，我们基本都需要做到「查找某一节点」的功能，所以我们把它单独抽象成一个私有方法，提高了整个数据结构设计的结构性，代码也变得更加可维护。</p>
+        <h4>除名</h4>
+        <p>除名相比于前面的操作要复杂一点，因为要涉及到父子关系的变更。如果我们要把某个节点及其子节点从一个家族树当中除去，我们首先要找到这个节点，但是找到之后还不能马上删去，需要在它的父亲一层节点中找到对应的指向这个要删除节点的指针，把它从父亲的「孩子」列表中移除，最后再释放这个资源。</p>
+        <p>当然，对于树结构中节点的删除，还有一个简单有效的办法叫做「懒删除」。也就是在书的每个节点中定义一个布尔值字段用来表示该节点是否已被删去。如果已被删去，就当它不存在处理。</p>
+      </section>
+      <section>
+        <li><h3>API</h3></li>
+        <p>这是家族类的主要接口。</p>
+        <pre><code>
+class Genealogy {
+    
+    // 从祖先的名字开始创建家族
+    Genealogy(const std::string& ancestor_name);
+
+    // 负责释放资源的析构函数
+    ~Genealogy();
+
+    // 给名字叫做name的添加一个孩子
+    void add(const std::string& name, const std::string& child_name);
+
+    // 给名字叫做old_name的家庭成员改名
+    void rename(const std::string& old_name, const std::string& new_name);
+
+    // 将名字叫name的成员及其孩子从家族中除名
+    void dismiss(const std::string& name);
+
+    // 对家族中的每一个成员都施加某种操作（作为函数参数）
+    template&lt;typename F&gt;
+    void foreach_chilren(const std::string& name, F fn)
+};
+        </code></pre>
+      </section>
+      </ol>
+    </main>
+    <footer>
+      2016, 邱超凡
+    </footer>
+  </body>
+</html>

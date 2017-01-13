@@ -1,0 +1,116 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>N皇后问题</title>
+    <link rel="stylesheet" href="../common.css">
+  </head>
+  <body>
+    <main>
+      <h1>N皇后问题</h1>
+      <h2>数据结构课程设计作业</h2>
+      <ol>
+      <section>
+        <li><h3>简介</h3></li>
+        <p>本程序基于命令行界面，向用户提供了求解N皇后问题程序的操作接口。</p>
+        <p>本系统使用C++语言写成，可以在任何支持C++14标准的编译器上编译通过。</p>
+      </section>
+      <section>
+        <li><h3>功能</h3></li>
+        <p>这个程序可以实现求解N皇后问题的功能，用户输入N的值，程序输出解的个数和每个解。</p>
+        <p>最后输出的结果大概如下所示：</p>
+        <blockquote>
+            现有NxN的棋盘，放入N个皇后，要求所有皇后不在同一行、列和同一斜线上！ <br>
+            请输入皇后的个数：4 <br>
+            皇后摆法： <br>
+            0 0 X 0 <br>
+            X 0 0 0 <br>
+            0 0 0 X <br>
+            0 X 0 0 <br>
+            <br>
+            0 X 0 0 <br>
+            0 0 0 X <br>
+            X 0 0 0 <br> 
+            0 0 X 0 <br>
+            <br>
+            共有2种摆法
+        </blockquote>
+        <p>其中X表示皇后的位置。</p>
+      </section>
+      <section>
+        <li><h3>实现</h3></li>
+        <p>程序采用了回溯法，一旦搜索过程中发现某一步有问题，那么就不再就这条路线搜索，而是退回。这样可以减少大量的情况检查的开销。</p>
+        <table class="nqueens">
+          <tr><td>0</td><td style="color:red;">X</td><td>0</td><td>0</td></tr>
+          <tr><td>X</td><td>0</td><td>0</td><td>0</td></tr>
+          <tr><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+          <tr><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+        </table>
+        <p>如图表所示，当程序发现走到这一步这里的X（用红色表示），已经违反了我们的规则的时候，就停止继续放子，回退到上一级，也就是只放了一个X的时候。</p>
+        <table class="nqueens">
+          <tr><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+          <tr><td>X</td><td>0</td><td>0</td><td>0</td></tr>
+          <tr><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+          <tr><td>0</td><td>X</td><td>0</td><td>0</td></tr>
+        </table>
+        <p>到了这个位置，终于发现这里的X没有问题了，那才开始下一步的放子。每放到底一次，就给计数器加一，并且根据我们的设置来决定是否输出。</p>
+        <p>另一方面，程序为了达到更高的效率，利用位运算来实现行的逻辑。</p>
+        <p>像<code>board_[lineno] == 0</code>可以直接用来判断一行里有没有子，这样的做法反而更简单。经过<code>Board</code>类的封装，这种做法丝毫不影响我们程序的可读性。</p>
+        <p>程序的核心部分就是代码里的<code>fill()</code>方法，参数表示从左向右第几列。</p>
+        <p>值得一提的是，本程序在<code>main</code>中还实现了自动化测试，只要定义<kbd>HAVETEST</kbd>宏，程序就会自动计算每个N对应的解数量，并和正确答案进行比较。</p>
+      </section>
+      <section>
+        <li><h3>API</h3></li>
+        <p>程序对棋盘类进行了封装，因此求解的时候比较方便。</p>
+        <pre><code>
+class Board {
+
+    // 初始化棋盘
+    Board(unsigned n);
+
+    // 判断对角线上有没有子
+    bool diagonal(int x, int y);
+
+    // 检查某行是否有子
+    bool line(unsigned lineno, unsigned column);
+
+    // 在某个位置放子
+    void put(unsigned lineno, unsigned column);
+
+    // 将皇后从某个位置拿起来
+    void unput(unsigned lineno, unsigned column);
+
+    // 查看指定位置是否已放子
+    bool get(unsigned lineno, unsigned column) const''
+
+    // 返回棋盘大小
+    unsigned size(void) const;
+};
+
+class NQueenSolver {
+
+    // 用以表示是否输出每个解的枚举类型
+    enum PrintOption {
+        Print, NoPrint
+    };
+
+    // 初始化求解类
+    NQueenSolver(Board& bd, PrintOption po);
+
+    // 求解问题
+    void solve(void);
+
+    // 返回解的数量
+    unsigned long solutions(void) const;
+
+    // 返回有没有解
+    bool any(void) const;
+};
+        </code></pre>
+      </section>
+      </ol>
+    </main>
+    <footer>
+      2016, 邱超凡
+    </footer>
+  </body>
+</html>

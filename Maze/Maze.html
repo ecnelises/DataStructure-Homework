@@ -1,0 +1,83 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>迷宫探索问题</title>
+    <link rel="stylesheet" href="../common.css">
+  </head>
+  <body>
+    <main>
+      <h1>迷宫探索问题</h1>
+      <h2>数据结构课程设计作业</h2>
+      <ol>
+      <section>
+        <li><h3>简介</h3></li>
+        <p>本程序实现了一个迷宫探索程序，并提供了一个简单的可以展示其功能的命令行界面。</p>
+        <p>本系统使用C++语言写成，可以在任何支持C++14标准的编译器上编译通过。</p>
+      </section>
+      <section>
+        <li><h3>功能</h3></li>
+        <p>本程序基于命令行，用户输入迷宫的尺寸和内容、起点，程序计算出从起点出去的路线。</p>
+        <p>大致的形式像这样：</p>
+        <blockquote>
+            请输入迷宫的行数：5 <br>
+            请输入迷宫的列数：5 <br>
+            请输入迷宫的起点行和起点列（0开始）：0 1 <br>
+            请输入迷宫，1表示墙，0表示路： <br>
+            1 0 0 1 0 <br>
+            1 0 1 0 1 <br>
+            1 0 0 1 0 <br>
+            1 0 0 0 0 <br>
+            1 1 1 1 1 <br>
+            路径是：(0, 1)->(1, 1)->(2, 1)->(2, 2)->(3, 2)->(3, 3)->(3, 4)
+        </blockquote>
+        <p>用户输入中以0表示可走的路，1表示不可走的墙，默认以最右列或最底行为终点。</p>
+      </section>
+      <section>
+        <li><h3>实现</h3></li>
+        <p>迷宫问题的求解是用非递归方法，搭配C++标准模版库中的<code>stack</code>类实现的。</p>
+        <p>具体的求解流程是：</p>
+        <ul>
+          <li>从起点出发，将四周可走的点都移入栈中，并将当前所在点置为「已探索」，栈中的每个点都包含了它「上一个」的编号和自身的编号</li>
+          <li>依次探索栈顶的点，然后置为「已探索」</li>
+          <li>如果遇到死路，就沿着栈中记录的「上一个」一直退回，到当前的「上一个」编号与上一个元素的编号不同的位置，也就是上一个「十字路口」</li>
+          <li>如果当前点可以为终点，就一路回退，将路线保存到一个列表中，由于有「上一个」编号的存在，可以忽略十字路口中的其他方向</li>
+        </ul>
+        <p>这里还用到了C++11引入的<code>tuple</code>类型。</p>
+        <table class="maze">
+          <tr><td class="wall"></td><td class="way"></td><td></td><td class="wall"></td><td></td></tr>
+          <tr><td class="wall"></td><td class="way"></td><td class="wall"></td><td></td><td class="wall"></td></tr>
+          <tr><td class="wall"></td><td class="way"></td><td class="way"></td><td class="wall"></td><td></td></tr>
+          <tr><td class="wall"></td><td></td><td class="way"></td><td class="way"></td><td class="way"></td></tr>
+          <tr><td class="wall"></td><td class="wall"></td><td class="wall"></td><td class="wall"></td><td class="wall"></td></tr>
+        </table>
+        <p>如图，红色为例子中迷宫的探索路线。</p>
+      </section>
+      <section>
+        <li><h3>API</h3></li>
+        <pre><code>
+class Maze {
+
+    // 输入迷宫
+    friend void input_maze(Maze& mz);
+
+    // 初始化迷宫
+    Maze(int rows, int columns, Point start = {0, 0});
+
+    // 判断是否成功找到终点
+    bool success() const;
+
+    // 返回路线（从终点到起点的坐标）
+    const std::vector&lt;Point&gt;& getPath() const;
+
+    // 找寻路线
+    void findWay();
+};
+        </code></pre>
+      </section>
+      </ol>
+    </main>
+    <footer>
+      2016, 邱超凡
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,81 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>电网造价模拟系统</title>
+    <link rel="stylesheet" href="../common.css">
+  </head>
+  <body>
+    <main>
+      <h1>电网造价模拟系统</h1>
+      <h2>数据结构课程设计作业</h2>
+      <ol>
+      <section>
+        <li><h3>简介</h3></li>
+        <p>本程序实现了一个电网造价系统，从用户定义的距离图当中计算建设电网所需的最小生成树，并提供了一个简单的可以展示其功能的命令行界面。</p>
+        <p>本系统使用C++语言写成，可以在任何支持C++14标准的编译器上编译通过。</p>
+      </section>
+      <section>
+        <li><h3>功能</h3></li>
+        <p>本程序基于命令行，用户输入命令，可以建立网络图、计算最小生成树、输出最小生成树。</p>
+        <p>大致的形式像这样：</p>
+        <blockquote>
+            ##	电网造价模拟系统	## <br>
+            ##				## <br>
+            ##	A -> 创建顶点		## <br>
+            ##	B -> 添加图边		## <br>
+            ##	C -> 生成最小生成树	## <br>
+            ##	D -> 显示最小生成树	## <br>
+            ##	E -> 退出		## <br>
+            请选择操作：
+        </blockquote>
+        <p>程序可以接受并处理用户的命令，然后向用户展示通过用户的命令对数据结构带来的修改，以及程序计算的结果。</p>
+      </section>
+      <section>
+        <li><h3>实现</h3></li>
+        <p>这里的图是基于C++ STL中的vector类实现的邻接矩阵，实现部分放在源代码文件而声明部分放在头文件中。在实际的命令行界面中，主程序然后接受用户的命令，通过已定义的接口对这个已经建立好的图进行操作。</p>
+        <img src="/Users/muller/dotsfile/grid_init.dot.svg" alt="grid_init.dot">
+        <p>这里的算法使用的是简单的Prim算法，它基于贪心的思想，通过局部最优解来求得全局最优解。下面简单描述一下它的求解过程：</p>
+        <img src="/Users/muller/dotsfile/grid_1.dot.svg" alt="grid_1.dot">
+        <p>首先随意找到一个点，在程序中也就是第一个加入的点，把这个点首先纳入到最小生成树的范围当中。我们用红色表示最小生成树。</p>
+        <img src="/Users/muller/dotsfile/grid_2.dot.svg" alt="grid_2.dot">
+        <p>找到从最小生成树内的任意一点出发，没有在最小生成树内，且边的权值最小的边和点，在这里就是D点。</p>
+        <img src="/Users/muller/dotsfile/grid_3.dot.svg" alt="grid_3.dot">
+        <p>同样的步骤，我们再次把C点放到了最小生成树当中。</p>
+        <img src="/Users/muller/dotsfile/grid_final.dot.svg" alt="grid_final.dot">
+        <p>不断重复此步骤，一次放进来一个新的顶点，直到所有的点都纳入了最小生成树当中，如图，这就是我们要求的最小生成树。</p>
+      </section>
+      <section>
+        <li><h3>API</h3></li>
+        <p>这是图类的主要接口。</p>
+        <pre><code>
+class Graph {
+
+    // 构造函数，初始化图
+    Graph(unsigned nodes);
+
+    // 获取两个顶点间的权值
+    int& between(unsigned r, unsigned s);
+    const int& between(unsigned r, unsigned s) const;
+
+    // 获取顶点数
+    unsigned nodes(void) const;
+
+    // 清空图
+    void reset(void);
+
+    // 对每条边及两个顶点进行操作
+    template&lt;typename F&gt;
+    void for_connected(F fn);
+};
+
+// 计算一个图的最小生成树
+Graph min_spanning_tree(Graph& g);
+        </code></pre>
+      </section>
+      </ol>
+    </main>
+    <footer>
+      2016, 邱超凡
+    </footer>
+  </body>
+</html>

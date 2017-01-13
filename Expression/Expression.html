@@ -1,0 +1,140 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>表达式计算</title>
+    <link rel="stylesheet" href="../common.css">
+  </head>
+  <body>
+    <main>
+      <h1>表达式计算</h1>
+      <h2>数据结构课程设计作业</h2>
+      <ol>
+      <section>
+        <li><h3>简介</h3></li>
+        <p>本程序基于命令行界面，向用户提供了一个支持基本加、减、乘、除和乘方的计算器。</p>
+        <p>本系统使用C++语言写成，可以在任何支持C++14标准的编译器上编译通过。</p>
+      </section>
+      <section>
+        <li><h3>功能</h3></li>
+        <p>本程序基于命令行，用户输入表达式，表达式的内容可以包含小数、括号，以及任意空格。</p>
+        <p>大致的形式像这样：</p>
+        <blockquote>
+            请输入一行表达式： <br>
+            (1+241^2 / 5.5)/4+4 <br>
+            前缀形式是：+ / + 1 / ^ 241 2 5.5 4 4 <br>
+            中缀形式是：1 241 2 ^ 5.5 / + 4 / 4 + <br>
+            计算结果是：2644.3 <br>
+        </blockquote>
+        <p>程序能够正确处理计算过程中除零等特殊情况，并根据IEEE 754标准输出比如NAN等特殊结果。</p>
+      </section>
+      <section>
+        <li><h3>实现</h3></li>
+        <p>表达式计算的实现遵循一个比较标准的词法分析和语法分析的流程。用户输入的字符串通过特定方法的处理转换为一个一个的记号流，而这些记号通过语法分析器的处理转换成对应结构的抽象语法树。最后，抽象语法树可以求值，或者根据要求输出表达式对应的前缀或者后缀的形式。</p>
+        <h4>词法分析</h4>
+        <p>表达式求值程序并不是严格地先将一整个字符串全部转化为记号列表，然后再将这个记号列表作为语法分析过程的参数；而是向语法分析部分提供了一个接口<code>next()</code>，让词法分析器获取「下一个」记号。</p>
+        <p>在这个程序中，记号的类型比较简单，可以直接写在<code>Parser</code>类里。对于稍复杂的情况，可以单独创建一个<code>Token</code>类，实现一个类似于「Discriminated Union」的结构，用一个字段来表示记号的类型。</p>
+        <p>简单地说，每次调用<code>next()</code>方法，<code>Parser::status</code>以及其他存储实际内容的变量都会改变，语法解析部分通过这些内容获取信息。</p>
+        <p>具体到词法分析的过程，其实这个函数就是实现了一个手写的有限自动机，直观一点的状态转移图如下：</p>
+        <img src="/Users/muller/dotsfile/dfa.dot.svg" alt="dfa.dot">
+        <p>记号总共有<code>NUMBER</code>、<code>OPERATOR</code>、<code>UNKNOWN</code>和<code>END</code>四种类型。</p>
+        <h4>语法分析</h4>
+        <p>语法分析是一个比词法分析更加复杂的过程，因为表达式所遵循的文法并不是简单的正则文法，而是上下文无关文法，并且存在左递归。</p>
+        <p>大致的表达式文法规则如下：</p>
+        <pre>
+Expression = Term <br>
+Term = Factor
+     | Term '+' Factor
+     | Term '-' Factor <br>
+Factor = Power
+       | Factor '*' Power
+       | Factor '/' Power <br>
+Power = Unary
+      | Power '^' Unary <br>
+Unary = '(' Expression ')'
+      | '-' Unary
+      | '+' Unary
+      | NUMBER
+        </pre>
+        <p>显然，这是一个左递归的文法结构。单纯靠<kbd>LL(k)</kbd>的语法解析器是不能完整地处理这种类型的文法规则的。如果我们手动地改写左递归，那么最终表达式的结合性又会被改变。所以说，我们需要一种兼具可读性和实用性的解析方法。</p>
+        <p>仔细分析这个文法规则，可以发现，要解析表达式构造的左递归部分，可以靠迭代外加向前看两个符号解决。并且，解析三层非终结符的方式极为相似，我们可抽象出一个参数，即优先级，然后以此为依据，进行递归下降的解析。</p>
+        <img src="/Users/muller/dotsfile/recursive_descend.dot.svg" alt="recursive-descend.dot">
+        <p>具体一些的过程为：</p>
+        <ol>
+          <li>判断当前优先级，如果大于定于好的<kbd>MaxPre</kbd>，则直接进入解析<kbd>Unary</kbd></li>
+          <li>解析比当前优先级高一层的表达式，保留结果</li>
+          <li>判断面前的运算符结合性，如果是左结合，就递归解析；如果是右结合，就迭代解析，并把这个树作为已经好了的结果的左子树</li>
+          <li>返回构造好的树结构</li>
+        </ol>
+        <p>解析<kbd>Unary</kbd>的部分则比较简单，按照文法规则来就可以了，属于比较基本的递归下降过程。</p>
+        <p>将这两部分结合起来，我们就得到了这个程序的核心部分。</p>
+        <h4>计算结果</h4>
+        <p>在有了构造好的语法树之后，计算结果比较容易。我们为每个表达式节点都定义了一个虚方法<code>eval()</code>，最后调用根节点的<code>eval()</code>方法就可以获得表达式的值了。</p>
+        <p>类似地，我们可以写出前序遍历和后续遍历的方法，也对应着表达式的前缀形式和后缀形式。</p>
+        <img src="/Users/muller/dotsfile/expression_eval.dot.svg" alt="expression_eval.dot">
+        <p>值得一提的是，本程序在<code>main</code>中还实现了自动化测试，只要定义<kbd>HAVETEST</kbd>宏，程序就会自动计算预定义好的若干表达式，并和正确答案进行比较，以验证程序的正确性。</p>
+      </section>
+      <section>
+        <li><h3>API</h3></li>
+        <p>主要负责解析的类是<code>Parser</code>，其余定义了一堆<code>Node</code>类。</p>
+        <pre><code>
+class ExpressionNode {
+public:
+    ExpressionNode() {} <br>
+    // 虚析构函数
+    virtual ~ExpressionNode() {} <br>
+    // 给表达式求值的方法
+    virtual double eval(void) = 0; <br>
+    // 前序遍历这个表达式并输出
+    virtual void prefixVisit(void) = 0; <br>
+    // 后续遍历这个表达式并输出
+    virtual void postfixVisit(void) = 0;
+};
+
+// 表示数字表达式的节点类
+class NumberNode : public ExpressionNode;
+
+// 表示运算符表达式的节点类
+class OperationNode : public ExpressionNode;
+
+class Parser {
+public:
+    // s为要解析的一行字符串
+    Parser(const std::string& s) : curpos(s.c_str()), curop(-1), curnum(NAN) { next(); } <br>
+    ~Parser() {} <br>
+    std::unique_ptr&lt;ExpressionNode&gt; get(void);
+private:
+    // 获取运算符的优先级
+    int precedenceOf(char op); <br>
+    // 获取运算符的结合性
+    enum OperatorAssociativity { Left, Right };
+    OperatorAssociativity assocOf(char op); <br>
+    // 获取下一个记号
+    void next(void); <br>
+    // 解析二元表达式
+    ExpressionNode* binary(int pre); <br>
+    // 解析一元表达式
+    ExpressionNode* unary(void); <br>
+private:
+    static const int MaxPre = 4;
+    static const int BasicPre = 1;
+    double curnum;
+    int curop;
+    const char* curpos;
+    enum {
+        NUMBER, OPERATOR, UNKNOWN, END
+    } status;
+};
+        </code></pre>
+      </section>
+      <section>
+        <li><h3>不足</h3></li>
+        <p>主要的不足在于没有除错机制，无法对付有错的表达式。要解决的办法也比较简单，可以在每次调用<code>next()</code>的时候再引入一个<code>expect()</code>方法，确定前面一个记号的类型或值，如果出错就抛出异常，在顶层catch之后输出「表达式有错」就可以了。</p>
+        <p>由于整个程序是基于递归下降完成的，所以要扩展，比如加入函数，也非常简单，引入一层新的终结符就可以了。</p>
+      </section>
+      </ol>
+    </main>
+    <footer>
+      2016, 邱超凡
+    </footer>
+  </body>
+</html>

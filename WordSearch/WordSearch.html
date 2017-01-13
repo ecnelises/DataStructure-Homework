@@ -1,0 +1,68 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>关键字检索系统</title>
+    <link rel="stylesheet" href="../common.css">
+  </head>
+  <body>
+    <main>
+      <h1>关键字检索系统</h1>
+      <h2>数据结构课程设计作业</h2>
+      <ol>
+      <section>
+        <li><h3>简介</h3></li>
+        <p>本程序实现了一个关键字检索系统，并提供了一个简单的可以展示其功能的命令行界面。</p>
+        <p>本系统使用C++语言写成，可以在任何支持C++14标准的编译器上编译通过。</p>
+      </section>
+      <section>
+        <li><h3>功能</h3></li>
+        <p>本程序基于命令行，用户输入字符串，输出到文件，然后在字符串中查找指定的关键字。</p>
+        <p>大致的形式像这样：</p>
+        <blockquote>
+            请先输入文件名：Example.out <br>
+            请输入一段英文，以空行结尾：<br>
+            This is an example paragraph for string searching with naive algorithm. <br>
+            And we can end by typing an empty line. <br>
+            Right? <br>
+            <br>
+            本段文本已保存在文本文件'Example.out'中。 <br>
+            请输入要检索的关键字：in <br>
+            关键字'in'共出现4次 <br>
+        </blockquote>
+        <p>程序可以接受用户输入的字符串，以空行表示结尾，然后输入要查找的模式串，输出匹配次数。</p>
+      </section>
+      <section>
+        <li><h3>实现</h3></li>
+        <p>这里的实现用到了两种算法，一个是传统的朴素模式匹配算法，一个是简化了的<kbd>Rabin-Karp</kbd>算法。</p>
+        <h4>朴素匹配</h4>
+        <img src="/Users/muller/dotsfile/string_search.dot.svg" alt="string_search.dot">
+        <p>朴素字符串匹配算法非常简单，只需要逐个字符匹配即可，如果本位置匹配失败，就简单地右移模式串，直到到达字符串末尾或者匹配成功。</p>
+        <p>朴素字符串匹配的时间复杂度为<kbd>O(mn)</kbd>，m、n分别为模式串和文本串的长度。</p>
+        <h4>Rabin-Karp算法</h4>
+        <p>Rabin-Karp算法和其他改进版本的字符串匹配算法类似，都是为了减少完整的匹配次数。区别在于，Rabin-Karp算法对字符串本身的特性进行了考量，也就是在每次进行完整匹配之前，先进行一次散列，先比较散列值，如果相等再进行匹配。而散列值可以从前一次的结果中推导出，这样就可以有效减少匹配次数。</p>
+        <p>本程序使用到的算法是Rabin-Karp算法的简化版，仅仅对模式串四个字符求和，这样做可以减少随着字符移动重新计算散列值时的开销。在实际的比较当中，这个算法比朴素字符串比较要来得高效一点。</p>
+        <p>具体的算法细节可以参考源代码中的<code>rabin_karp_search()</code>方法。</p>
+      </section>
+      <section>
+        <li><h3>API</h3></li>
+        <p>这是两个主要的字符串匹配方法。</p>
+        <pre><code>
+// 朴素字符串匹配算法
+size_t naive_search(const std::string& text, const std::string& pattern);
+
+// Rabin-Karp算法
+size_t rabin_karp_search(const std::string& text, const std::string& pattern);
+        </code></pre>
+      </section>
+      <section>
+        <li><h3>不足</h3></li>
+        <p>可能是由于缓存命中率等原因，在开满编译器优化的情况下，这里的朴素匹配算法比Rabin-Karp算法还要快。</p>
+        <p>下一步可以考虑采用BM、KMP等跳跃比较的算法，然后比较一下效率差别。</p>
+      </section>
+      </ol>
+    </main>
+    <footer>
+      2016, 邱超凡
+    </footer>
+  </body>
+</html>

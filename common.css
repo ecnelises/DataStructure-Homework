@@ -31,3 +31,43 @@ code {
 footer {
   font-family: monospace;
 }
+
+blockquote {
+  border-left: 4px solid #6BD9ED;
+  padding: 8px 0 8px 12px;
+  margin-left: 0;
+  font-family: monospace;
+  background-color: #1A1A1A;
+  color: white;
+}
+
+table.nqueens {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+
+table.nqueens td {
+  font-family: monospace;
+  border: 1px solid black;
+  padding: 6px 8px;
+  font-size: 18px;
+}
+
+table.maze {
+  border-collapse: collapse;
+}
+
+table.maze td {
+  background-color: white;
+  margin: 0;
+  padding: 20px;
+}
+
+table.maze td.wall {
+  background-color: black;
+  border: 0;
+}
+
+table.maze td.way {
+  background-color: red;
+}

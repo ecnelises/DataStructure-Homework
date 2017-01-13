@@ -1,0 +1,106 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>二叉搜索树</title>
+    <link rel="stylesheet" href="../common.css">
+  </head>
+  <body>
+    <main>
+      <h1>二叉搜索树</h1>
+      <h2>数据结构课程设计作业</h2>
+      <ol>
+      <section>
+        <li><h3>简介</h3></li>
+        <p>本程序实现了一个二叉搜索树的抽象数据类型，并提供了一个简单的可以展示其功能的命令行界面。</p>
+        <p>本系统使用C++语言写成，可以在任何支持C++14标准的编译器上编译通过。</p>
+      </section>
+      <section>
+        <li><h3>功能</h3></li>
+        <p>本程序基于命令行，用户输入表达式，表达式的内容可以包含小数、括号，以及任意空格。</p>
+        <p>大致的形式像这样：</p>
+        <blockquote>
+            ##		二叉排序树			## <br>
+            ## ## <br>
+            ##		1 -> 建立树	  ## <br>
+            ##		2 -> 插入元素		## <br>
+            ##		3 -> 查找元素		## <br>
+            ##		4 -> 删除元素		## <br>
+            ##		0 -> 退出		## <br>
+            请选择命令：
+        </blockquote>
+        <p>程序可以接受并处理用户的命令，然后向用户展示二叉搜索树的查找、插入、删除的功能。</p>
+      </section>
+      <section>
+        <li><h3>实现</h3></li>
+        <p>这里的二叉搜索树基于C++模版实现，所以实现部分也一并放在头文件中。在实际的命令行界面中，这个被实例化成<kbd>int</kbd>的版本，然后接受用户的命令，对二叉树进行操作。</p>
+        <img src="/Users/muller/dotsfile/binary_tree_process.dot.svg" alt="binary_tree_process.dot">
+        <p>更加具体的逻辑就在二叉树的cpp文件里，其中都是比较琐碎的命令行处理，重点在于二叉树的实现。</p>
+        <h4>查找</h4>
+        <p>二叉树的查找部分比较简单，甚至递归都可以改写成循环。</p>
+        <img src="/Users/muller/dotsfile/search_binary_tree.dot.svg" alt="search_binary_tree.dot">
+        <p>如图，要查找键15，先从根部开始，发现是17，比15大，于是向左走。</p>
+        <p>到了左儿子，发现键是14，比15小，于是向右走。这次发现了15，查找成功。</p>
+        <p>而如果查找的键不存在，就一直向下到达某个<kbd>NIL</kbd>的位置，如果发现当前节点是<kbd>NIL</kbd>，就报告查找失败。</p>
+        <h4>插入</h4>
+        <p>由于这只是普通的二叉搜索树，还没有考虑到平衡性的问题，所以插入的过程复杂程度没有比查找高出太多，只需要查找到最底层的节点，然后和这个节点比较大小，插入到适合的位置就可以。不过要注意的是，由于在二叉树中有parent指针这个东西的存在，所以插入时（包括后来的删除调整），都需要检查一下当前节点是父节点的左儿子还是右儿子。在这个二叉树的实现中，有一个私有方法<code>get_which_child()</code>以完成这个功能。</p>
+        <p>比方说，我们要插入值31，过程如下：</p>
+        <img src="/Users/muller/dotsfile/insert_binary_tree.dot.svg" alt="insert_binary_tree.dot">
+        <p>我们按照查找的顺序找到了33，然后发现31比33小，于是应该插入到左边，也就是图中的这个位置。而其他情况下的插入也类似。</p>
+        <h4>删除</h4>
+        <p>删除是二叉搜索树中最为麻烦的操作。因为在删除以后需要调整二叉树来保障它的性质：左子树的所有元素都比右子树中的任一元素小。</p>
+        <p>而根据要删去的节点孩子数量的不同，可以分为这样几种情况：</p>
+        <ul>
+          <li>没有孩子</li>
+          <img src="/Users/muller/dotsfile/delete_binary_tree_case1.dot.svg" alt="delete_binary_tree_case1.dot">
+          <p>这种情况最为简单，直接删掉，然后将父节点对应的孩子指针字段置空即可。</p>
+          <li>有一个及以上的孩子</li>
+          <img src="/Users/muller/dotsfile/delete_binary_tree_case2.dot.svg" alt="delete_binary_tree_case2.dot">
+          <p>若只有一个孩子，就删掉Node然后用孩子来代替；如果有两个孩子，就规定用右孩子来接替父节点。这其中会涉及到一些调整指针的操作。</p>
+          <li>两个孩子都有，且右孩子还有孩子</li>
+          <img src="/Users/muller/dotsfile/delete_binary_tree_case3.dot.svg" alt="delete_binary_tree_case3.dot">
+          <p>这种情况涉及的调整相对复杂，固定下来的策略是，用右子树中最小的节点，也就是图中的<kbd>RLChild</kbd>来接替要删除的节点。这里的调整操作比较多，具体可以详见程序中的<code>node_remove()</code>方法。</p>
+        </ul>
+        <p>当然，对于删除，还有一个简单有效的办法叫做「懒删除」。也就是在书的每个节点中定义一个布尔值字段用来表示该节点是否已被删去。如果已被删去，就当它不存在处理。</p>
+      </section>
+      <section>
+        <li><h3>API</h3></li>
+        <p>这是二叉树类的主要接口。</p>
+        <pre><code>
+template&lt;typename T&gt;
+class BinaryTree {
+
+    // 构造函数，默认创建一棵空树
+    BinaryTree();
+
+    // 析构函数，用来自动释放资源
+    ~BinaryTree();
+
+    // 返回树是否为空
+    bool empty() const;
+
+    // 删除对应键的节点，如果不存在则无副作用
+    void remove(const T& val);
+
+    // 插入对应键的节点，如果已存在则无副作用
+    void insert(const T& val);
+
+    // 查找特定键是否存在于树中
+    bool search(const T& val);
+
+    // 以所有的节点作为参数依次调用一个函数
+    template&lt;typename F&gt;
+    void foreach(F fn);
+};
+        </code></pre>
+      </section>
+      <section>
+        <li><h3>不足</h3></li>
+        <p>简单的二叉搜索树缺乏平衡性，可以考虑用红黑树、伸展树或者AVL树之类的数据结构改写。</p>
+      </section>
+      </ol>
+    </main>
+    <footer>
+      2016, 邱超凡
+    </footer>
+  </body>
+</html>
